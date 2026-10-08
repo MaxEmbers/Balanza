@@ -1,0 +1,12 @@
+BALANZA - app instalable (PWA)
+
+Archivos (todos van juntos, en la misma carpeta):
+  index.html      la app
+  manifest.json   datos para que el celular la instale como app
+  sw.js           permite que funcione sin internet
+  icon-192.png    icono
+  icon-512.png    icono grande
+
+Para instalarla en el celular hay que ponerla en internet UNA vez
+(gratis, con GitHub Pages) y luego instalarla desde el navegador.
+Pasos detallados: ver la respuesta de Claude en el chat.
