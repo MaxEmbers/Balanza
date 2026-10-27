@@ -69,6 +69,16 @@ input:focus,select:focus{outline:2px solid var(--ac);border-color:var(--ac)}
 .bk .btns{display:flex;gap:8px;flex-wrap:wrap}
 .bk .btns button{flex:1;min-width:45%;padding:12px 8px;font-size:15px;font-weight:600;border-radius:10px;border:1.5px solid var(--br);background:var(--bg);color:var(--tx)}
 .bk input[type=file]{display:none}
+.cobro .linea{display:flex;justify-content:space-between;align-items:center;font-size:15px;color:var(--mut);margin-bottom:10px}
+.cobro .linea b{font-size:24px;color:var(--tx)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chips button{flex:1;min-width:30%;padding:11px 6px;font-size:16px;font-weight:600;border-radius:10px;border:1.5px solid var(--br);background:var(--bg);color:var(--tx)}
+.chips .ex{background:var(--acbg);border-color:var(--ac)}
+.chips .bo{color:var(--red)}
+.vuelto{margin-top:12px;padding:12px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;font-size:16px;background:var(--acbg);color:var(--mut)}
+.vuelto b{font-size:30px;color:var(--ac)}
+.vuelto.falta{background:transparent;border:1.5px solid var(--red)}
+.vuelto.falta b{color:var(--red)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;max-width:90%;text-align:center}
 .toast.show{opacity:.95}
 </style>
@@ -129,6 +139,22 @@ input:focus,select:focus{outline:2px solid var(--ac);border-color:var(--ac)}
 
   <h2>Lista</h2>
   <div class="card" id="lista"></div>
+
+  <div class="card cobro">
+    <div class="linea"><span>Total a cobrar</span><b id="cobTotal">$ 0,00</b></div>
+    <label>Recibí</label>
+    <input id="recibi" type="text" inputmode="decimal" placeholder="$ 0" autocomplete="off">
+    <div class="chips">
+      <button type="button" data-v="500">+500</button>
+      <button type="button" data-v="1000">+1.000</button>
+      <button type="button" data-v="2000">+2.000</button>
+      <button type="button" data-v="10000">+10.000</button>
+      <button type="button" data-v="20000">+20.000</button>
+      <button type="button" class="ex" id="recExacto">Justo</button>
+      <button type="button" class="bo" id="recBorrar">Borrar</button>
+    </div>
+    <div class="vuelto" id="vueltoBox" style="display:none"><span id="vueltoLbl">Vuelto</span><b id="vuelto">$ 0,00</b></div>
+  </div>
 
   <div class="card">
     <label>Nombre de la persona</label>
@@ -235,6 +261,7 @@ input:focus,select:focus{outline:2px solid var(--ac);border-color:var(--ac)}
     $('total').textContent=fmt(tot);
     $('vaciar').style.display=items.length?'':'none';
     $('finalizar').disabled=!items.length;
+    vuelto();
   }
   function agregar(){
     var s=subtotal(); if(!(s>0)) return;
@@ -255,6 +282,23 @@ input:focus,select:focus{outline:2px solid var(--ac);border-color:var(--ac)}
     actualizar();
   }
 
+  /* ---------- vuelto ---------- */
+  function totalActual(){return Math.round(items.reduce(function(a,i){return a+i.total},0)*100)/100}
+  function setRecibi(n){
+    $('recibi').value=n>0?String(Number(n.toFixed(2))).replace('.',','):'';
+    vuelto();
+  }
+  function vuelto(){
+    var t=totalActual(), r=Math.round(num($('recibi').value)*100)/100;
+    $('cobTotal').textContent=fmt(t);
+    var box=$('vueltoBox');
+    if(!(r>0)||!(t>0)){box.style.display='none';return}
+    box.style.display='';
+    var d=Math.round((r-t)*100)/100;
+    if(d>=0){box.classList.remove('falta');$('vueltoLbl').textContent='Vuelto';$('vuelto').textContent=fmt(d)}
+    else{box.classList.add('falta');$('vueltoLbl').textContent='Falta';$('vuelto').textContent=fmt(-d)}
+  }
+
   /* ---------- guardar atendimiento ---------- */
   function finalizar(){
     if(!items.length) return;
@@ -266,6 +310,7 @@ input:focus,select:focus{outline:2px solid var(--ac);border-color:var(--ac)}
     wr(K_HIST,hist);
     items=[];wr(K_ITEMS,items);
     $('cliente').value='';
+    $('recibi').value='';
     render();
     abierto=rec.id;
     vista('hist');
@@ -466,10 +511,16 @@ input:focus,select:focus{outline:2px solid var(--ac);border-color:var(--ac)}
   $('mas').onclick=function(){$('cant').value=Math.floor(num($('cant').value))+1;actualizar()};
   $('guardar').onclick=agregar;
   $('finalizar').onclick=finalizar;
-  $('vaciar').onclick=function(){if(confirm('¿Vaciar la lista actual?')){items=[];wr(K_ITEMS,items);render()}};
+  $('vaciar').onclick=function(){if(confirm('¿Vaciar la lista actual?')){items=[];wr(K_ITEMS,items);$('recibi').value='';render()}};
   $('tNueva').onclick=function(){vista('nueva')};
   $('tHist').onclick=function(){vista('hist')};
   $('buscar').addEventListener('input',renderHist);
+  $('recibi').addEventListener('input',vuelto);
+  Array.prototype.forEach.call(document.querySelectorAll('.chips button[data-v]'),function(b){
+    b.onclick=function(){setRecibi(num($('recibi').value)+num(b.getAttribute('data-v')))};
+  });
+  $('recExacto').onclick=function(){setRecibi(totalActual())};
+  $('recBorrar').onclick=function(){setRecibi(0)};
   $('bkJson').onclick=respaldo;
   $('bkCsv').onclick=function(){
     if(!hist.length){toast('No hay atendimientos para exportar');return}

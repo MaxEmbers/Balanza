@@ -9,4 +9,4 @@ Archivos (todos van juntos, en la misma carpeta):
 
 Para instalarla en el celular hay que ponerla en internet UNA vez
 (gratis, con GitHub Pages) y luego instalarla desde el navegador.
-Pasos detallados: ver la respuesta de Claude en el chat.
+Si ya la subiste antes, reemplazá index.html y sw.js por los nuevos.

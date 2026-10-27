@@ -1,6 +1,6 @@
 // Guarda la app en el celular para que funcione sin internet.
-// Si cambiás index.html, subí el número de versión (v1 -> v2) para forzar la actualización.
-const CACHE = 'balanza-v1';
+// Si cambiás index.html, subí el número de versión (v2 -> v3) para forzar la actualización.
+const CACHE = 'balanza-v2';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
